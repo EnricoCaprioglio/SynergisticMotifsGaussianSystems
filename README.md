@@ -2,13 +2,12 @@
 The repository accompanies the paper: "Synergistic Motif in Gaussian Systems".
 It includes all the notebooks used to collect data and plot the figures in the paper and in the supplementary material.
 
-md"""
 # Overview
 
 These [Pluto notebooks](https://plutojl.org/) should be mostly plug and play.
 The main thing you have to do is to load some data for the non-isomporhic graphs, update the relevant paths, and install the python package `HOI` (see below).
 
-If you want to just have a quick look and run some simulations, I added in each notebook a cell containing some non-isomorphic graphs. For graphs of size N > 5 you will need to store these somewhere else.
+If you want to just have a quick look and run some simulations without loading the graphs dataset, I added in each notebook a cell containing some non-isomorphic graphs. For graphs of size N > 5 you will need to download the dataset.
 
 All the figures use data that can be generated here in just a few seconds or worst a few minutes (except the SL simulation for N=6). To reproduce exactly what is shown in the paper, use the same seeds to generate the random numbers used here (these should always be sepcified otherwise reach out).
 
@@ -33,4 +32,3 @@ CondaPkg.status()
 ```
 
 For the empirical data analysis, we used python. The final figure was then plotted in Julia.
-"""
