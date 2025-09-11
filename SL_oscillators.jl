@@ -62,6 +62,8 @@ This is either because paths are not updated, or because the non-isomorphic grap
 
 If you are simulating the SL experiment, the other error that will appear is from `CondaPkg` trying to load the python package `HOI`. You will need to add `HOI` to compute the O-information. Follow the instruction from `https://github.com/JuliaPy/CondaPkg.jl` to install python packages (you will need to use `CondaPkg.add_pip("hoi")`, see also `https://brainets.github.io/hoi/install.html`)
 
+Alternatively, you can collect data here, save it using a package such as `NPZ.jl`, and open it in Python using Numpy.
+
 Check that the function `_loadUniqueSignedMats` at the bottom of the notebook is working properly.
 """
 
@@ -658,9 +660,10 @@ let
 	
 		S = zeros(6,6)
 		for i in 1:6
-			for j in 1:6
+			for j in i:6
 				Δθ = θ[i, :] .- θ[j, :]
 				S[i,j] = mean(cos.(Δθ))
+				S[j,i] = S[i,j]
 			end
 		end
 
@@ -730,9 +733,10 @@ let
 	
 		S = zeros(6,6)
 		for i in 1:6
-			for j in 1:6
+			for j in i:6
 				Δθ = θ[i, :] .- θ[j, :]
 				S[i,j] = mean(cos.(Δθ))
+				S[j,i] = S[i,j]
 			end
 		end
 
@@ -846,7 +850,7 @@ end
 
 # ╔═╡ 86ae0627-8546-4195-83b3-6a65c9dccaa8
 let
-	save_resultsQ = false
+	save_resultsQ = true
 	filterDataQ = true
 	
 	N = 4 # system size
@@ -861,7 +865,7 @@ let
 	dt_save = 1e-3 # saved data
 
 	seed = 1  # rng starting seed
-	no_tests = 1
+	no_tests = 100
 
 	# load unique signed graphs
 	mats = _loadUniqueSignedMats(N)
