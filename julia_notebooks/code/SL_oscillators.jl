@@ -385,7 +385,8 @@ function _Ising_plot(fig, pos, N, β; res = nothing, markersize = 25)
 		title = L"\textbf{Ising }\,N = %$(N),\;βJ = %$(β)"
 	)
 	
-	col = Makie.wong_colors()[1]
+	# col = Makie.wong_colors()[1]
+	col = cgrad(:acton, 10, categorical=true)[3]
 	
 	mk.scatter!(
 		ax, res[1, :], res[2, :],
@@ -401,6 +402,11 @@ function _Ising_plot(fig, pos, N, β; res = nothing, markersize = 25)
 
 	return fig, ax
 end
+
+# ╔═╡ d2264c7e-57ce-41b7-8e58-7b2859047c3e
+md"""
+## SM figure
+"""
 
 # ╔═╡ 33caef20-cb92-4b69-b37c-8659ea2d8120
 md"""
@@ -850,7 +856,7 @@ end
 
 # ╔═╡ 86ae0627-8546-4195-83b3-6a65c9dccaa8
 let
-	save_resultsQ = true
+	save_resultsQ = false
 	filterDataQ = true
 	
 	N = 4 # system size
@@ -865,7 +871,7 @@ let
 	dt_save = 1e-3 # saved data
 
 	seed = 1  # rng starting seed
-	no_tests = 100
+	no_tests = 1
 
 	# load unique signed graphs
 	mats = _loadUniqueSignedMats(N)
@@ -931,7 +937,7 @@ let
 	# save data:
 	folder_path = "/Users/ec627/Documents/Data/InformationTheory/Stuart-Landau/N_$(N)_40Hz_final/"
 	
-	filename = "f_$(f)_K_$(round(K₀, digits=2))_sig_$(σ)_dt_$(dt)_a_$(a)_tmax_$(tmax)_t_relax_$(t_relax)_dt_save_$(dt_save)_notests_$(no_tests)_seed_start_$(seed)_end_$(seed_counter)_filterDataQ_$(filterDataQ).jld2"
+	filename = "f_$(f)_K0_$(round(K₀, digits=2))_sig_$(σ)_dt_$(dt)_a_$(a)_tmax_$(tmax)_t_relax_$(t_relax)_dt_save_$(dt_save)_notests_$(no_tests)_seed_start_$(seed)_end_$(seed_counter)_filterDataQ_$(filterDataQ).jld2"
 
 	if save_resultsQ
 		save_object(folder_path * filename, res)
@@ -1371,7 +1377,7 @@ let
 end
 
 # ╔═╡ 31779a2e-ffce-406a-b024-dd84666a6cd1
-function _SL_plot(fig, pos, res, N, K; legend_pos=:lb)
+function _SL_plot(fig, pos, res, N, K; legendQ=true, legend_pos=:lb)
 
 	#### simplest plot ####
 	ax = Axis(
@@ -1409,7 +1415,9 @@ function _SL_plot(fig, pos, res, N, K; legend_pos=:lb)
 
 	end
 	
-	col = Makie.wong_colors()[1]
+	# col = Makie.wong_colors()[1]
+	col = cgrad(:acton, 10, categorical=true)[3]
+	
 	mk.scatter!(
 		ax, x, y, markersize=25, color = col,
 		strokecolor = :black, strokewidth = 1
@@ -1437,7 +1445,9 @@ function _SL_plot(fig, pos, res, N, K; legend_pos=:lb)
 		color = col, strokecolor = :black,
 		strokewidth = 2, label=L"\text{Lower Bound}"
 	)
-	axislegend(ax, position=legend_pos, labelsize = 20)
+	if legendQ
+		axislegend(ax, position=legend_pos, labelsize = 20)
+	end
 
 	ax.xtickformat = x -> latexstring.(Int.(x))
 	ax.ytickformat = x -> latexstring.(round.(x, digits = 3))
@@ -1529,7 +1539,9 @@ let
 	ax2.ylabel = ""
 	ax1.xlabel = ""
 	ax2.xlabel = ""
-	ax1.title = L"\textbf{Ising}\;N=6,\;\beta=0.25"
+	# ax1.title = L"\textbf{Ising}\;N=6,\;\beta=0.25"
+	ax1.title = L"\textbf{Ising},\;N=6"
+	ax2.title = L"\textbf{SL},\;N=6"
 
 	Label(
 		fig[2, 1:2],
@@ -1554,7 +1566,68 @@ let
 		)
 	end
 
-	# save("/Users/ec627/Documents/Sussex/papers/PRL Synergistic Motifs/final_figures/main/Ising_and_SL_figure.png", fig, px_per_unit=10)
+	# save("/Users/ec627/Documents/Sussex/papers/PRL Synergistic Motifs/final_figures/main/Ising_and_SL_figure.png", fig, px_per_unit=12)
+	
+	fig
+end
+
+# ╔═╡ 1b8a125f-c06d-4f60-944f-55ed9f24cf67
+let
+	data = load_object("/Users/ec627/Documents/Data/InformationTheory/Stuart-Landau/N_4_40Hz_final/f_40.0_K0_4.0_sig_0.001_dt_0.0001_a_-5.0_tmax_50.0_t_relax_10.0_dt_save_0.001_notests_100_seed_start_1_end_1101_filterDataQ_true.jld2")
+
+	fig = Figure()
+	_SL_plot(fig, (1,1), data, 4, 4)
+	fig
+	# data[2:end, :]
+end
+
+# ╔═╡ 08fc28b0-3eaa-4944-adbe-f549bb269d3d
+let
+	files = [
+		"f_40.0_K0_4.0_sig_0.001_dt_0.0001_a_-5.0_tmax_50.0_t_relax_10.0_dt_save_0.001_notests_100_seed_start_1_end_1101_filterDataQ_true.jld2",
+		"f_40.0_K0_4.0_sig_0.001_dt_0.0001_a_-5.0_tmax_50.0_t_relax_10.0_dt_save_0.001_notests_100_seed_start_1_end_1101_filterDataQ_false.jld2",
+		"f_40.0_K0_4.0_sig_0.001_dt_0.0001_a_-5.0_tmax_50.0_t_relax_10.0_dt_save_0.001_notests_100_seed_start_1_end_3401_filterDataQ_true.jld2"
+	]
+
+	K₀=4
+	Ns = [4,4,5]
+
+	fig = Figure(fontsize=24, size = (850, 300))
+	
+	for (i, file) in enumerate(files)
+		folderpath = "/Users/ec627/Documents/Data/InformationTheory/Stuart-Landau/N_$(Ns[i])_40Hz_final/"
+		data = load_object(folderpath*file)
+		fig, ax = _SL_plot(fig, (1,i), data, Ns[i], K₀; legendQ=false, legend_pos=:lb)
+		ax.title = L"\textbf{SL},\;N=%$(Ns[i])"
+		ax.xlabel = ""
+		if i >1
+			ax.ylabel=""
+		end
+	end
+
+	# add grid labels
+	ga = fig[1, 1] = GridLayout()
+	gb = fig[1, 2] = GridLayout()
+	gc = fig[1, 3] = GridLayout()
+	panellabels = [L"\textbf{(a)}", L"\textbf{(b)}", L"\textbf{(c)}"]
+	for (label, layout) in zip(panellabels, [ga, gb, gc])
+	    Label(layout[1, 1, TopLeft()], label,
+	        fontsize = 24,
+	        # font = :bold,
+	        padding = (0, 15, 5, 0),
+	        halign = :right
+		)
+	end
+
+	Label(
+		fig[2, 1:3],
+		L"\text{no. of antibalanced triangles}";
+		fontsize = 24,
+		halign   = :center,
+		valign   = :top
+	)
+
+	# save("/Users/ec627/Documents/Sussex/papers/PRL Synergistic Motifs/final_figures/main/SL_extra_figures.png", fig, px_per_unit=10)
 	
 	fig
 end
@@ -3795,6 +3868,9 @@ version = "1.8.1+0"
 # ╟─fff18b30-2da2-47e4-84ab-418004085f02
 # ╟─5c3c3727-a7c5-4d97-bcef-8073ca09abc9
 # ╟─9d993c1c-e455-4baf-93a5-fa7b5b3e576f
+# ╟─d2264c7e-57ce-41b7-8e58-7b2859047c3e
+# ╟─1b8a125f-c06d-4f60-944f-55ed9f24cf67
+# ╟─08fc28b0-3eaa-4944-adbe-f549bb269d3d
 # ╟─33caef20-cb92-4b69-b37c-8659ea2d8120
 # ╟─c76c1b44-1bf1-4943-81df-94baaebb0273
 # ╟─14a8c34f-fe4e-4402-9113-f20705641261

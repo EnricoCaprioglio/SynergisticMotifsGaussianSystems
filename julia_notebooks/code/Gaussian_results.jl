@@ -1229,13 +1229,13 @@ function plot_fig_2(fig, ax, store_data, N; uniform_sampleQ=true, cbarpos = (1,2
 	################################################
 	############# find colorbar limits #############
 
-	# Minimum and maximum of all Ωs
-	all_Ωs = vcat([store_data[m]["Ωs"] for m in keys(store_data)]...)
-	min_Ω = minimum(all_Ωs); max_Ω = maximum(all_Ωs)
+	# # Minimum and maximum of all Ωs
+	# all_Ωs = vcat([store_data[m]["Ωs"] for m in keys(store_data)]...)
+	# min_Ω = minimum(all_Ωs); max_Ω = maximum(all_Ωs)
 	
-	# Minimum and maximum of all Us
-	all_Us = vcat([store_data[m]["Us"] for m in keys(store_data)]...)
-	min_U = minimum(all_Us); max_U = maximum(all_Us)
+	# # Minimum and maximum of all Us
+	# all_Us = vcat([store_data[m]["Us"] for m in keys(store_data)]...)
+	# min_U = minimum(all_Us); max_U = maximum(all_Us)
 
 	# find minimum U that gets plotted
 	mean_Us = mean.(filter(!isempty, [store_data[m]["Us"] for m in keys(store_data)]))
@@ -1243,7 +1243,7 @@ function plot_fig_2(fig, ax, store_data, N; uniform_sampleQ=true, cbarpos = (1,2
 
 	# since we plot the minimum mean U and the overall maximum U
 	# we use these two values only to color the plot:
-	plt_min_U = min_mean_U; plt_max_U = max_U
+	plt_min_U = min_mean_U; plt_max_U = max_mean_U
 
 	################################################
 	################### plot data ##################
@@ -1255,7 +1255,8 @@ function plot_fig_2(fig, ax, store_data, N; uniform_sampleQ=true, cbarpos = (1,2
 	# 1. find where to change color from red to blue
 	white_pt = (0 - plt_min_U) / (plt_max_U - plt_min_U)
 	# 2. create colormap
-	colors = cgrad([colorant"#6a89fc", :white, :red], [0, white_pt, 1])
+	# colors = cgrad([colorant"#6a89fc", :white, :red], [0, white_pt, 1])
+	colors = cgrad(:acton, [0, white_pt, 1]) # tokyo100
 
 	# plot line between lower bound and mean
 	for (i, m) in enumerate(x)
