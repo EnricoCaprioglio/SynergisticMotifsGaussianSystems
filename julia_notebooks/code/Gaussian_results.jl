@@ -50,6 +50,19 @@ begin
 	using DelimitedFiles
 end
 
+# ╔═╡ 39a62205-52d7-4cde-ae88-bb3647269ca3
+md"""
+---
+
+## Contact Details
+
+**Author:** Enrico Caprioglio
+
+**Email:** ec627@sussex.ac.uk
+
+---
+"""
+
 # ╔═╡ e871cd46-6972-11f0-3a86-0bc90c07b000
 md"""
 # NOTE
@@ -57,6 +70,8 @@ First time you run the notebook you will see some errors.
 This is either because paths are not updated, or because the non-isomorphic graphs are not loaded properly.
 
 Check that the function `_loadUniqueSignedMats` at the bottom of the notebook is working properly.
+
+If you spot any other issue, let me know!
 """
 
 # ╔═╡ 5a6152ff-26d6-4e85-8d44-677a9629d0d3
@@ -84,20 +99,6 @@ begin
 		end
 	end
 end
-
-# ╔═╡ 2c0e3687-c24d-4694-aa2f-6d3c329e0ec1
-md"""
----
-"""
-
-# ╔═╡ 7e0db642-addf-4ac6-a8ea-6675d1938a30
-md"""
-## Contact Details
-
-**Author:** Enrico Caprioglio
-
-**Email:** ec627@sussex.ac.uk
-"""
 
 # ╔═╡ e30214ee-80e4-4e04-9f59-3c6e8c179571
 md"""
@@ -172,7 +173,7 @@ $$\Omega(\boldsymbol{X}) = \frac16 \mathrm{tr}[W^3] + \mathcal{O}(|W_{ij}|^4).$$
 
 # ╔═╡ 301692e2-70ed-49ff-b113-1767f7dcf55d
 md"""
-!!! info "Lemma 1 quick test"
+!!! info "Quick test"
 	Here, we sample a large correlation matrix (uniformly, at random) and compute $\Omega$ and the structural balance-energy $U$ of random subsystems of size $N$.
 
 	**Note:** randomly sampling a large correlation matrix almost always results in a synergistic system (thus not very illuminating, see below).
@@ -879,7 +880,7 @@ begin
 	)
 
 	DS_ϵ_fig_2_sel = @bind DS_ϵ_fig_2_val confirm(
-		PlutoUI.Slider(collect(0.001:0.001:1), default = 0.4, show_value=true)
+		PlutoUI.Slider(collect(0.001:0.1:10), default = 0.4, show_value=true)
 	)
 
 	DS_no_tests_fig_sel = @bind DS_no_tests_fig_val confirm(
@@ -1016,6 +1017,194 @@ Here we show results
 - for different values of $\epsilon$.
 """
 
+# ╔═╡ 5f206c44-d78d-448c-98f3-09d6501d1392
+md"""
+#### EXTRA: On the spectral radius of $A$ and cubic dominance
+
+Additional checks on the lower and upper bound of $\Omega$.
+"""
+
+# ╔═╡ 1530b16a-1d28-48f1-9d91-0ce451d69814
+let
+	println("Simple loop to check the spcetral radius given some N and some ϵ")
+	println("uncomment to run")
+	# N_vec = [4,5]
+	# ϵ_vec = [0.9, 2, 10]
+	# selfQ = false
+
+	# for N in N_vec
+	# 	@show N
+	# 	signed_mats = _loadUniqueSignedMats(N)
+	# 	for signed_mat in signed_mats
+	# 		for ϵ in ϵ_vec
+	# 			A = _get_schur_stable_from_signed_g(signed_mat; ϵ = ϵ, selfQ = selfQ)
+	# 			@show maximum(abs.(eigen(A).values))
+	# 		end
+	# 	end
+	# 	println()
+	# end
+end
+
+# ╔═╡ 9357c386-bee1-452e-adc2-a2c4c848c4b6
+md"""
+or play around with the cell below to check the typical spectral radius for a given $N$ and $\epsilon$.
+"""
+
+# ╔═╡ e13241d8-5cfa-4fbb-be93-c60b4eecc402
+function _plot_SM_fig(store_data, fig, pos)
+	
+	no_triangles = maximum(keys(store_data))
+
+	no_triangles_vals = []
+	max_vals = []
+	min_vals = []
+	mean_vals = []
+	std_vals = []
+	
+	for i in 1:no_triangles
+		vals=store_data[i]["Ωs"]
+		if length(vals) ≥ 1
+			
+			push!(no_triangles_vals, i)
+			push!(max_vals, maximum(vals))
+			push!(min_vals, minimum(vals))
+			push!(mean_vals, mean(vals))
+			push!(std_vals, std(vals))
+		end
+	end
+
+	y_center_extrema=(max_vals .+ min_vals) ./ 2
+	y_half_extrema=(max_vals .- min_vals) ./ 2
+	
+	ax  = mk.Axis(fig[pos[1], pos[2]],
+	    # xlabel = L"\text{No. of antibalanced triangles}",
+	    ylabel = L"\Omega"
+	)
+
+	# plot min and max bars
+	mk.errorbars!(
+		ax,no_triangles_vals,
+		y_center_extrema, y_half_extrema,
+		linewidth = 1,
+		color=:black
+	)
+	
+	# plot std
+	mk.errorbars!(
+		ax, no_triangles_vals, mean_vals, std_vals,
+		linewidth = 3, color = :red
+	)
+	
+	mk.scatter!(
+		ax, no_triangles_vals,
+		min_vals,
+		marker = :dtriangle,
+		markersize = 15,
+		strokecolor = :black,
+		strokewidth = 1,
+		color=:red
+	)
+	mk.scatter!(
+		ax, no_triangles_vals, max_vals,
+		marker = :utriangle,
+		markersize = 15,
+		strokecolor = :black,
+		strokewidth = 1,
+		color=:red
+	)
+	# plot mean value
+	mk.scatter!(
+		ax, no_triangles_vals, mean_vals,
+		markersize = 20,
+		color=:blue
+	)
+	
+	return fig, ax
+end
+
+# ╔═╡ d051f201-c634-4b75-ac20-2906370872d1
+md"""
+below we plot the maximum as well.
+"""
+
+# ╔═╡ e8019de2-ad2d-4220-a680-c8cd842b283e
+let
+	res = load_object("/Users/ec627/Documents/Data/InformationTheory/OU_process/OU_data_figures/fast_collect_N_8_no_tests_100000_epsilon_0.5_selfQ_falsecube_rootQ_false_seed_no_1.jld2")
+	store_data = res["store_data"]
+
+	fig = mk.Figure(fontsize=24, size = (750, 400*2))
+	fig, ax = _plot_SM_fig(store_data, fig, (1,1))
+	ax.xtickformat = x -> latexstring.(Int.(x))
+	ax.ytickformat = x -> latexstring.(round.(x, digits = 3))
+	ax.title = L"N=8,\;\epsilon=0.5,\;\langle\rho(A)\rangle\approx0.85"
+
+	res2 = load_object("/Users/ec627/Documents/Data/InformationTheory/OU_process/OU_data_figures/fast_collect_N_8_no_tests_100000_epsilon_5_selfQ_falsecube_rootQ_false_seed_no_1.jld2")
+	store_data2 = res2["store_data"]
+	fig, ax = _plot_SM_fig(store_data2, fig, (1,2))
+	ax.xtickformat = x -> latexstring.(Int.(x))
+	ax.ytickformat = x -> latexstring.(round.(x, digits = 3))
+	ax.ylabel = ""
+	ax.title = L"N=8,\;\epsilon=5,\;\langle\rho(A)\rangle\approx0.37"
+
+	# Label(fig[2, 1:2], L"\text{No. of antibalanced triangles}")
+	
+	# add a legend using some dummy plots
+	dummy_mean = mk.scatter!(ax, [NaN], [NaN], markersize=25, color=:blue, strokecolor = :black, strokewidth = 2, label=L"\text{Mean}")
+	dummy_upper = mk.scatter!(
+		ax, [NaN], [NaN],
+		marker=:utriangle, markersize=15,
+		color = :red, strokecolor = :black,
+		strokewidth = 2, label=L"\text{Upper Bound}"
+	)
+	dummy_lower = mk.scatter!(
+		ax, [NaN], [NaN],
+		marker=:dtriangle, markersize=15,
+		color = :red, strokecolor = :black,
+		strokewidth = 2, label=L"\text{Lower Bound}"
+	)
+	axislegend(ax, position=:rt, labelsize = 20)
+
+	res = load_object("/Users/ec627/Documents/Data/InformationTheory/OU_process/OU_data_figures/fast_collect_N_9_no_tests_10000_epsilon_0.5_selfQ_falsecube_rootQ_false_seed_no_1.jld2")
+	store_data = res["store_data"]
+
+	# fig = mk.Figure(fontsize=24, size = (750, 400))
+	fig, ax = _plot_SM_fig(store_data, fig, (2,1))
+	ax.xtickformat = x -> latexstring.(Int.(x))
+	ax.ytickformat = x -> latexstring.(round.(x, digits = 3))
+	ax.title = L"N=9,\;\epsilon=0.5,\;\langle\rho(A)\rangle\approx0.86"
+
+	res2 = load_object("/Users/ec627/Documents/Data/InformationTheory/OU_process/OU_data_figures/fast_collect_N_9_no_tests_10000_epsilon_5_selfQ_falsecube_rootQ_false_seed_no_1.jld2")
+	store_data2 = res2["store_data"]
+	fig, ax = _plot_SM_fig(store_data2, fig, (2,2))
+	ax.xtickformat = x -> latexstring.(Int.(x))
+	ax.ytickformat = x -> latexstring.(round.(x, digits = 3))
+	ax.ylabel = ""
+	ax.title = L"N=9,\;\epsilon=5,\;\langle\rho(A)\rangle\approx0.39"
+
+	Label(fig[3, 1:2], L"\text{No. of antibalanced triangles}")
+	
+	# add a legend using some dummy plots
+	# dummy_mean = mk.scatter!(ax, [NaN], [NaN], markersize=25, color=:blue, strokecolor = :black, strokewidth = 2, label=L"\text{Mean}")
+	# dummy_upper = mk.scatter!(
+	# 	ax, [NaN], [NaN],
+	# 	marker=:utriangle, markersize=15,
+	# 	color = :red, strokecolor = :black,
+	# 	strokewidth = 2, label=L"\text{Upper Bound}"
+	# )
+	# dummy_lower = mk.scatter!(
+	# 	ax, [NaN], [NaN],
+	# 	marker=:dtriangle, markersize=15,
+	# 	color = :red, strokecolor = :black,
+	# 	strokewidth = 2, label=L"\text{Lower Bound}"
+	# )
+	# axislegend(ax, position=:rt, labelsize = 20)
+
+	# inch = 96
+	# save("/Users/ec627/Documents/Sussex/papers/PRL Synergistic Motifs/final_figures/Supplemental_Material/details_upper_lower_bounds.png", fig, px_per_unit = 600/inch)
+	
+	fig
+end
+
 # ╔═╡ f3e5f2ab-94a4-4fe5-8463-467f40e3330c
 md"""
 # Functions
@@ -1050,6 +1239,31 @@ function _loadUniqueSignedMats(N; path = nothing)
 	end
 
 	return [map(x -> x == 1 ? -1 : 1, mat) for mat in mats]
+end
+
+# ╔═╡ ae816633-6f0e-44f6-b310-fb67477777ad
+let
+	N = 7
+	ϵ = 5
+	selfQ = true
+
+	signed_mats = _loadUniqueSignedMats(N)
+	signed_mat = signed_mats[rand(1:length(signed_mats))]
+	A = _get_schur_stable_from_signed_g(signed_mat; ϵ = ϵ, selfQ = selfQ)
+	@show maximum(abs.(eigen(A).values))
+	
+end
+
+# ╔═╡ ba32b465-abe7-4872-bd90-79dd1a6a72b2
+let
+	println("Quick check to see if mats are loaded properly")
+	println("\nIt may also be the case that the mats are not in the same order if you used python to make the `.txt` files!")
+	
+	N = 5
+	mats_local = non_iso_g_notebook(N)
+	mats_from_file = _loadUniqueSignedMats(N)
+	
+	mats_local == mats_from_file || error("mats are not loaded properly!")
 end
 
 # ╔═╡ f1380ef6-43ff-4ba9-a277-e3bfd70fe8b7
@@ -1306,7 +1520,7 @@ function plot_fig_2(fig, ax, store_data, N; uniform_sampleQ=true, cbarpos = (1,2
 
 	ax.xtickformat = x -> latexstring.(Int.(x))
 	ax.ytickformat = x -> latexstring.(round.(x, digits = 3))
-	cbar.tickformat = x -> latexstring.(round.(x, digits=3))
+	cbar.tickformat = x -> latexstring.(round.(x, digits = 5))
 
 	if N != 4		
 		
@@ -1353,17 +1567,21 @@ let
 	# N = 7 (default), N = 7 no self interactions, N = 7 different ϵ
 	
 	files = [
-		"/Users/ec627/Documents/Data/InformationTheory/OU_process/OU_data_figures/N_4_no_tests_10000_epsilon_0.4_selfQ_truecube_rootQ_false_seed_no_1.jld2",
-		"/Users/ec627/Documents/Data/InformationTheory/OU_process/OU_data_figures/N_5_no_tests_10000_epsilon_0.4_selfQ_truecube_rootQ_false_seed_no_1.jld2",
-		"/Users/ec627/Documents/Data/InformationTheory/OU_process/OU_data_figures/N_6_no_tests_10000_epsilon_0.4_selfQ_truecube_rootQ_false_seed_no_1.jld2",
-		"/Users/ec627/Documents/Data/InformationTheory/OU_process/OU_data_figures/N_7_no_tests_1000_epsilon_0.4_selfQ_truecube_rootQ_false_seed_no_1.jld2",
-		"/Users/ec627/Documents/Data/InformationTheory/OU_process/OU_data_figures/N_7_no_tests_1000_epsilon_0.001_selfQ_truecube_rootQ_false_seed_no_1.jld2",
-		"/Users/ec627/Documents/Data/InformationTheory/OU_process/OU_data_figures/N_7_no_tests_1000_epsilon_0.4_selfQ_falsecube_rootQ_false_seed_no_1.jld2",
+		"/Users/ec627/Documents/Data/InformationTheory/OU_process/OU_data_figures/fast_collect_N_4_no_tests_100000_epsilon_0.5_selfQ_truecube_rootQ_false_seed_no_1.jld2",
+		"/Users/ec627/Documents/Data/InformationTheory/OU_process/OU_data_figures/fast_collect_N_5_no_tests_100000_epsilon_0.5_selfQ_truecube_rootQ_false_seed_no_1.jld2",
+		"/Users/ec627/Documents/Data/InformationTheory/OU_process/OU_data_figures/fast_collect_N_6_no_tests_100000_epsilon_0.5_selfQ_truecube_rootQ_false_seed_no_1.jld2",
+		"/Users/ec627/Documents/Data/InformationTheory/OU_process/OU_data_figures/fast_collect_N_7_no_tests_100000_epsilon_0.5_selfQ_truecube_rootQ_false_seed_no_1.jld2",
+		"/Users/ec627/Documents/Data/InformationTheory/OU_process/OU_data_figures/fast_collect_N_7_no_tests_100000_epsilon_0.001_selfQ_truecube_rootQ_false_seed_no_1.jld2",
+		"/Users/ec627/Documents/Data/InformationTheory/OU_process/OU_data_figures/fast_collect_N_7_no_tests_100000_epsilon_0.5_selfQ_falsecube_rootQ_false_seed_no_1.jld2",
+		"/Users/ec627/Documents/Data/InformationTheory/OU_process/OU_data_figures/fast_collect_N_8_no_tests_100000_epsilon_5_selfQ_falsecube_rootQ_false_seed_no_1.jld2",
+		"/Users/ec627/Documents/Data/InformationTheory/OU_process/OU_data_figures/fast_collect_N_8_no_tests_100000_epsilon_0.001_selfQ_falsecube_rootQ_false_seed_no_1.jld2",
+		"/Users/ec627/Documents/Data/InformationTheory/OU_process/OU_data_figures/fast_collect_N_9_no_tests_10000_epsilon_0.5_selfQ_falsecube_rootQ_false_seed_no_1.jld2"
 	]
 
-	ϵ_vec = [.4, .4, .4, .4, .001, .4,]
+	ϵ_vec = [.5, .5, .5, .5, .001, .5, 5, .001, .5]
+	ρA_vec = [0.78, 0.81, 0.83, 0.84, 0.999, 0.84, 0.37, 0.999, 0.86]
 
-	fig = Figure(size = (650 * 3, 450 * 2), fontsize = 32)
+	fig = Figure(size = (650 * 3, 450 * 3), fontsize = 36)
 
 	for (i, file) in enumerate(files)
 
@@ -1371,14 +1589,14 @@ let
 		store_data = res["store_data"]
 		N = res["N"]
 
-		row = i/2 < 2 ? 1 : 2
+		row = Int(ceil(i/3))
 		col = mod(i-1, 3) + 1 + mod(i-1, 3)
 		
 		ax = Axis(
 			fig[row, col],
 			xlabel = L"\text{no. of antibalanced triangles}",
 			ylabel = L"\Omega(\textbf{X})",
-			title = L"N = %$(N),\;\epsilon = %$(ϵ_vec[i])"
+			title = L"N = %$(N),\;\epsilon=%$(ϵ_vec[i]),\;\langle\rho(A)\rangle\approx%$(ρA_vec[i])"
 		)
 		
 		fig, ax = plot_fig_2(
@@ -1388,18 +1606,23 @@ let
 			cbarpos = (row, col + 1)
 		)
 
+		ax.xlabel = ""
+		
 		if col > 1
 			ax.ylabel = ""
 		end
-		if row == 1
-			ax.xlabel = ""
+		if row < 3
+			
 		end
 		if i == 6
-			ax.title = L"N = %$(N),\;\epsilon = %$(ϵ_vec[i]),\;A_{ii}=0"
+			ax.title = L"N = %$(N),\;\epsilon = %$(ϵ_vec[i]),\;A_{ii}=0,\;\langle\rho(A)\rangle\approx%$(ρA_vec[i])"
 		end
 	end
 
-	# save("/Users/ec627/Documents/Sussex/papers/PRL Synergistic Motifs/final_figures/Supplemental_Material/OU_process_N_4_to_7.png", fig, px_per_unit=12)
+	Label(fig[4, 1:6], L"\text{no. of antibalanced triangles}")
+
+	inch = 96
+	save("/Users/ec627/Documents/Sussex/papers/PRL Synergistic Motifs/final_figures/Supplemental_Material/OU_process_N_4_to_7.png", fig, px_per_unit=600/inch)
 
 	fig
 end
@@ -1716,6 +1939,8 @@ end
 
 # ╔═╡ 8a17fcf8-6e91-4f15-94f1-b018d24771de
 let
+	Random.seed!(1)
+	
 	N = 3
 
 	# set up interaction matrix example
@@ -1730,7 +1955,7 @@ let
 	# set up simulation parameters
 	dt = 0.01
 	id_mat = diagm(ones(N))
-	t_final = 1000000
+	t_final = 100000
 
 	# simulate system (Euler's method)
 	X = OU_process(t_final, N, A, dt)
@@ -2128,7 +2353,14 @@ end
 
 # ╔═╡ e73f4ebd-707e-41a4-bf25-9f81e2269269
 let
-	N = 6
+	# --- change these params to explore ----------
+	N = 5
+	ϵ = 0.999
+	max_k = 9
+	no_tests=10
+
+	# --- get balanced and antibalanced indexes ----------
+	
 	println("For N = $N, we have:")
 	ids = count_motifs.(_loadUniqueSignedMats(N), summation=false)
 
@@ -2145,15 +2377,17 @@ let
 	end
 
 	println("Balanced: ", balanced_idxs)
+	println("Antibalanced: ", antibalanced_idxs)
+
+	# --- get closed walks --------------------------------
 	
-	id = 149
+	id = 5
 	
 	S = _loadUniqueSignedMats(N)[id]
 	S[diagind(S)] .= 0
-	display(S)
+	# display(S)
 	II = diagm(ones(N))
 
-	max_k = 9
 	walks_dict = Dict()
 	for k in 3:max_k
 		wᵏ = closed_walks_length_k(N, k)
@@ -2161,28 +2395,23 @@ let
 	end
 	
 
+	ρ_A_collect = []
 	res = []
-	@progress for test in 1:10
+	@progress for test in 1:no_tests
 
 		# Random.seed!(test)
 	
-		A = _get_schur_stable_from_signed_g(S; ϵ = .001, selfQ = true)
+		A = _get_schur_stable_from_signed_g(S; ϵ = ϵ, selfQ = false)
 		Σstar = OU_process_exact(A)
 		Σ = cov2cor(Σstar)
 		Ω = O_information_gaussian(Σ)
-
-		# check if balanced then Ω > 0:
-		if Ω < 0
-			println("test1: ", test)
-		end
 
 		W = Σ - II
 		# display(W)
 		λ_max = maximum(abs.(eigen(W).values))
 		
 		# check assumption: |1/6 * tr[W³] | > |R₄(W)|
-		higher_k = 0
-		low_order = 0
+		higher_k = 0; low_order = 0
 		for k in 3:max_k
 			wᵏ = walks_dict[k]
 			sign_k = (-1)^(k-1) * (1/ (2*k))
@@ -2195,15 +2424,62 @@ let
 			end
 		end
 
-		if λ_max < 1
-			if abs(tr(W^3) / 6) < abs(higher_k)
-				println("test: ",  test)
-			end
-			push!(res, abs(tr(W^3) / 6) > abs(higher_k))
+		# push!(res, abs(tr(W^3) / 6) > abs(higher_k))
+		push!(res, abs(low_order) > abs(higher_k))
+		push!(ρ_A_collect, maximum(abs.(eigen(A).values)))
+
+		# @show abs(tr(W^3) / 6) - abs(higher_k)
+	end
+	
+	println("Cubic dominance false: ", count(x -> !x, res) / no_tests)
+	println("Cubic dominance true: ",count(x -> x, res)/no_tests)
+	@show round.(ρ_A_collect, digits=3)
+	res
+end
+
+# ╔═╡ 745e9340-bc76-4f06-ad1c-15e2757f9749
+let
+	N = 5
+	ϵ = 0.99
+	max_k = 9
+	no_tests=10
+
+	# --- get balanced and antibalanced indexes ----------
+	
+	println("For N = $N, we have:")
+	ids = count_motifs.(_loadUniqueSignedMats(N), summation=false)
+
+	balanced_idxs = Int64[]
+	antibalanced_idxs = Int64[]
+	
+	for i in 1:length(ids)
+		if count(x -> x == -1, ids[i]) == length(ids[i])
+			push!(antibalanced_idxs, i)
+		end
+		if count(x -> x == 1, ids[i]) == length(ids[i])
+			push!(balanced_idxs, i)
 		end
 	end
-	println(count(x -> !x, res))
-	println(count(x -> x, res))
+
+	println("Balanced: ", balanced_idxs)
+	println("Antibalanced: ", antibalanced_idxs)
+
+	# --- get closed walks --------------------------------
+	
+	id1 = 5
+	
+	S = _loadUniqueSignedMats(N)[id1]
+	S[diagind(S)] .= 0
+	II = diagm(ones(N))
+
+	walks_dict1 = Dict()
+	for k in 3:max_k
+		wᵏ = closed_walks_length_k(N, k)
+		walks_dict1[k] = wᵏ
+	end
+
+	N5_walks_3 = unique(collect.(Set.(walks_dict1[3])))
+	@show N5_walks_3
 end
 
 # ╔═╡ 1a9e46e9-56dd-45d9-a33b-99359c7bd9a2
@@ -2471,9 +2747,132 @@ let
 		uniform_sampleQ = UniformSampleQ_fig_2_val
 	)
 
-	# save("/Users/ec627/Documents/Sussex/papers/PRL Synergistic Motifs/final_figures/main/OU_process_N_$(N)_no_tests_1000.png", fig, px_per_unit=10)
+	# save("/Users/ec627/Documents/Sussex/papers/PRL Synergistic Motifs/final_figures/main/OU_process_N_$(N)_no_tests_100000.png", fig, px_per_unit=10)
 	
 	fig
+end
+
+# ╔═╡ 6b5d80db-4664-4f10-8957-605fdf9d1f14
+let
+	println("Faster collect data (here we just sample interaction matrices with a specifc number of antibalanced triangles")
+
+	# set to true to save results
+	save_resQ = false
+
+	N = 4
+	ϵ = .4
+	selfQ = false
+	no_tests = 100
+
+	println("\nParameters used:")
+	println(" - N = $N")
+	println(" - ϵ = $ϵ")
+	println(" - Self-interactions? $(selfQ)")
+	println(" - number of tests for each configuration = $no_tests")
+	
+	plot_max_min_std_Q = true
+	cube_rootQ = false # (here we use Marvel et al (2009) definition)
+
+	seed_no = 1
+	Random.seed!(seed_no)
+
+	# by default, we compute the theoretical value of the covariance 
+	# matrix of the stationary process
+	thoeretical_cov_Q = true # if false the discrete simulation will be performed
+	# default values for the discrete simulation are:
+	dt = 0.01
+	t_final = 10000
+
+	# load all non-isomorphic signed graphs
+	signed_mats = _loadUniqueSignedMats(N)
+
+	# dictionary to store data
+	possible_m = collect(0:Int(binomial(N,3)))
+	store_data = Dict()
+	spectral_radii = []
+	
+	# initialize store dictionary
+	for motif_key in possible_m
+		store_data[motif_key] = Dict(
+			"Ωs" => [],
+			"Us" => [],
+		)
+	end
+
+	# find all the configuration ids that have the same number of antibalanced triangles
+	no_antib_triangle_lookup = Dict()
+	for (id, signed_mat) in enumerate(signed_mats)
+		motif_key = count(x -> x == 1 || x == -3, count_motifs(signed_mat))
+		push!(get!(no_antib_triangle_lookup, motif_key, []), id)
+	end
+
+	# for example, there are 5 configurations with 0 antibalanced triangles
+	# @show length(no_antib_triangle_lookup[0]) # uncomment to see this
+
+	# So, we loop though all possible no. of antib. triangles, and select $(no_tests) with a specific no. of antib. triangles.
+	
+	configurations_loop = Dict()
+	for motif_key in keys(no_antib_triangle_lookup)
+		configurations_loop[motif_key] = rand(no_antib_triangle_lookup[motif_key], no_tests)
+	end
+	
+	# uncomment these lines below to see what is going on
+	# @show no_antib_triangle_lookup[0]
+	# @show configurations_loop[0]
+	
+	########################################################################
+	############# collect data #############
+	
+	# loop through all non-isomorphic signed graphs
+	tic = time()
+	@progress for motif_key in collect(keys(no_antib_triangle_lookup))
+
+		for config_id in configurations_loop[motif_key]
+
+			signed_mat = signed_mats[config_id]
+			
+			# generate Schur stable matrix
+			A = _get_schur_stable_from_signed_g(signed_mat; ϵ = ϵ, selfQ = selfQ)
+
+			# get number of motifs
+			S = map(x-> x > 0 ? 1 : -1, A)
+			motif_key = count(x -> x == 1 || x == -3, count_motifs(S))
+
+			# store energy of the configuration
+			U = structural_energy(A, method = "forloop"; cube_rootQ=cube_rootQ)
+			push!(store_data[motif_key]["Us"], U)
+
+			if thoeretical_cov_Q
+				# theoretical covariance
+				Σstar = OU_process_exact(A)
+				Σ = cov2cor(Σstar)
+			else
+				# simulation
+				X = OU_process(t_final, N, A, dt)
+				Σ = cor(X)
+			end
+
+			# store O-info results
+			push!(store_data[motif_key]["Ωs"], O_information_gaussian(Σ))
+			push!(spectral_radii, _get_ρ(A))
+			
+		end
+		
+	end
+	
+	println("- mean ρ(A): $(round(mean(spectral_radii), digits = 5)) ± $(round(std(spectral_radii), digits = 5))")
+	println("\nFinished in $(round(time() - tic, digits=3)) s ")
+
+	# save data:
+	folderpath = "/Users/ec627/Documents/Data/InformationTheory/OU_process/OU_data_figures/"
+	
+	filename = "fast_collect_N_" * string(N) * "_no_tests_" * string(no_tests) * "_epsilon_" * string(ϵ) * "_selfQ_" * string(selfQ) * "cube_rootQ_" * string(cube_rootQ) * "_seed_no_" * string(seed_no)
+	
+	results = Dict("store_data" => store_data, "N" => N)
+	
+	if save_resQ == true
+		save_results(folderpath, filename, results)
+	end
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -4573,7 +4972,7 @@ uuid = "8e850ede-7688-5339-a07c-302acd2aaf8d"
 version = "1.59.0+0"
 
 [[deps.oneTBB_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl"]
+deps = ["Artifacts", "JLLWrappers", "LazyArtifacts", "Libdl"]
 git-tree-sha1 = "d5a767a3bb77135a99e433afe0eb14cd7f6914c3"
 uuid = "1317d2d5-d96f-522e-a858-c73665f53c3e"
 version = "2022.0.0+0"
@@ -4603,12 +5002,11 @@ version = "1.8.1+0"
 """
 
 # ╔═╡ Cell order:
+# ╟─39a62205-52d7-4cde-ae88-bb3647269ca3
 # ╟─e871cd46-6972-11f0-3a86-0bc90c07b000
 # ╟─5a6152ff-26d6-4e85-8d44-677a9629d0d3
 # ╟─29f90ce0-c4e1-4f6e-80ae-869476684967
 # ╟─2315f897-a517-48db-8e20-a0fe339554e9
-# ╟─2c0e3687-c24d-4694-aa2f-6d3c329e0ec1
-# ╟─7e0db642-addf-4ac6-a8ea-6675d1938a30
 # ╟─e30214ee-80e4-4e04-9f59-3c6e8c179571
 # ╟─a74a9e3a-9ca9-4c40-9603-9fc8ab9eb6bd
 # ╟─72d7966f-a743-4420-9a05-bc6a73195cd6
@@ -4648,6 +5046,7 @@ version = "1.8.1+0"
 # ╟─ca03e15f-73a8-4848-b266-e1f0979e7a29
 # ╟─bab29e46-88be-4a59-96d9-678247caeef0
 # ╟─e73f4ebd-707e-41a4-bf25-9f81e2269269
+# ╟─745e9340-bc76-4f06-ad1c-15e2757f9749
 # ╟─1040266b-4f06-442c-8f48-7f2a0b65248c
 # ╟─6653668f-abcd-446a-8132-7f381a6b6080
 # ╟─d6591598-5761-4e6c-ad20-625fc7758fcc
@@ -4676,10 +5075,19 @@ version = "1.8.1+0"
 # ╟─b974fbd8-0815-43a4-a2c9-a12e9cf7f2b6
 # ╟─2d00888b-15d1-4e47-928d-9edbb8ce56d0
 # ╟─591906dd-b8dd-4308-bce1-5edeffed09fe
+# ╟─6b5d80db-4664-4f10-8957-605fdf9d1f14
 # ╟─e96b1835-f6a2-49ca-a3cc-df389a8790f9
+# ╟─5f206c44-d78d-448c-98f3-09d6501d1392
+# ╟─1530b16a-1d28-48f1-9d91-0ce451d69814
+# ╟─9357c386-bee1-452e-adc2-a2c4c848c4b6
+# ╟─ae816633-6f0e-44f6-b310-fb67477777ad
+# ╟─e13241d8-5cfa-4fbb-be93-c60b4eecc402
+# ╟─d051f201-c634-4b75-ac20-2906370872d1
+# ╟─e8019de2-ad2d-4220-a680-c8cd842b283e
 # ╟─f3e5f2ab-94a4-4fe5-8463-467f40e3330c
 # ╟─0909b7da-d52f-43e4-be25-8a3c8704540b
 # ╟─99c463b8-9a98-4227-8eef-5f38f9e3adde
+# ╟─ba32b465-abe7-4872-bd90-79dd1a6a72b2
 # ╟─f1380ef6-43ff-4ba9-a277-e3bfd70fe8b7
 # ╟─577c1e03-d926-48a2-9150-98833e9ea522
 # ╟─88c940d1-e986-4526-b99d-2f6b6ef84a1b

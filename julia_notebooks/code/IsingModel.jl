@@ -37,6 +37,19 @@ begin
 	using DelimitedFiles
 end
 
+# ╔═╡ 6ce8aac4-ed92-4435-9848-fd87d5889423
+md"""
+---
+
+## Contact Details
+
+**Author:** Enrico Caprioglio
+
+**Email:** ec627@sussex.ac.uk
+
+---
+"""
+
 # ╔═╡ 22fbfce4-66fa-11f0-37b5-5d0d71b6667a
 md"""
 # NOTE
@@ -44,6 +57,8 @@ First time you run the notebook you will see some errors.
 This is either because paths are not updated, or because the non-isomorphic graphs are not loaded properly.
 
 Check that the function `_loadUniqueSignedMats` at the bottom of the notebook is working properly.
+
+If you spot any other issue, let me know!
 """
 
 # ╔═╡ 07362646-c8c4-4e43-a074-0afcf6c112e9
@@ -99,9 +114,9 @@ const mk = CairoMakie
 
 # ╔═╡ 39dfa770-fd8f-4b5d-abbb-294a49987180
 md"""
-# Ising Model
+# Ising-like Model
 
-To compute the O-information for the Ising model without external field, we just need to obtain the probability distribution of all possible states and then compute the relevant information theoretic quantities.
+To compute the O-information for the Ising-like model without external field, we just need to obtain the probability distribution of all possible states and then compute the relevant information theoretic quantities.
 
 The relevant information theoretic quantities are:
 - entropy $S$ of the whole system
@@ -429,9 +444,74 @@ function _Ising_plot(fig, pos, N, β; res = nothing, markersize = 25)
 	)
 
 	ax.xtickformat = x -> latexstring.(Int.(x))
-	ax.ytickformat = x -> latexstring.(x)
+	ax.ytickformat = x -> latexstring.(round.(x, digits=3))
 
 	return fig, ax
+end
+
+# ╔═╡ 1eea135d-4a69-44fb-8a2f-5a21ace0f10f
+md"""
+### Adding weights
+"""
+
+# ╔═╡ 6e902feb-87c0-4b39-b5e2-65310adc6447
+let
+	println("Cell used to collect data using random weights, uncomment to run")
+	
+	# N = 5
+	# mats = _loadUniqueSignedMats(N)
+	# no_mats = length(mats)
+	# β = .5; T = 1/β
+	
+	# μ = 0.5; σ = 0.4
+
+	# no_tests = 20
+
+	# res = zeros(2, no_mats)
+	# res_std = zeros(2, no_mats)
+
+	# @progress for id in 1:no_mats
+
+	# 	m_temp = []
+	# 	Ω_temp = []
+		
+	# 	for test in 1:no_tests
+	# 		J = Matrix{Real}(mats[id])
+	# 		J[diagind(J)] .= 0
+	
+	# 		# add weights
+	# 		for i in 1:N
+	# 			for j in i+1:N
+	# 				J[i,j] = J[i,j] * abs(rand(Normal(μ, σ)))
+	# 			end
+	# 		end
+			
+	# 		Ω = Oinfo_Ising(J, β)
+	# 		m = count(
+	# 			x -> x ==-1, count_motifs(sign.(J); summation = false, return_m_list = false)
+	# 		)
+
+	# 		push!(Ω_temp, Ω)
+	# 		push!(m_temp, m)
+			
+	# 	end
+
+	# 	res[1, id] = mean(m_temp)
+	# 	res[2, id] = mean(Ω_temp)
+
+	# 	res_std[1, id] = std(m_temp)
+	# 	res_std[2, id] = std(Ω_temp)
+	# end
+
+	# folderpath = "/Users/ec627/Documents/Data/InformationTheory/Ising/O_info_and_antibalance_in_Ising/"
+	
+	# # save_object(folderpath * "N_$(N)_beta_$(β).jld2", Dict("res" => res, "N" => N))
+
+	# fig = Figure(fontsize = 24)
+	# pos = (1,1)
+	# fig, ax = _Ising_plot(fig, pos, N, β; res = res)
+	# ax.title = L"\textbf{Ising: }N=%$N,\;\beta=%$(β)"
+	# fig
 end
 
 # ╔═╡ 91e9884c-28f1-45f3-ad7c-a3be21a59ae6
@@ -440,7 +520,7 @@ md"""
 
 For $N=\{5,7,9\}$ and $\beta=\{0.01, 0.1, 1, 10\}$.
 
-Note, we plot $N=7$ here rather than $N=9$ as it takes quite some time to plot (there are many non-isomorphic signed graphs of size $N=9$)
+Note, we plot $N=7$ twice here rather than $N=9$ as it takes quite some time to plot (there are many non-isomorphic signed graphs of size $N=9$)
 """
 
 # ╔═╡ a8e516c9-72ed-4509-be5a-a4ebafff5c7a
@@ -577,15 +657,6 @@ let
 	@assert isapprox(Ω, N-2; atol=1e-10) "Ω = $Ω ≠ N-2"
 end
 
-# ╔═╡ 81d4676c-4862-4f12-8970-2e5458369fa8
-let
-	N = 5
-	mats_local = non_iso_g_notebook(N)
-	mats_from_file = _loadUniqueSignedMats(N)
-	
-	mats_local == mats_from_file || error("mats are not loaded properly!")
-end
-
 # ╔═╡ 2e9a9240-84ef-45da-9805-ad7f5122a123
 function _loadAntibalancedGraphs(N)
 	
@@ -609,6 +680,18 @@ function _loadAntibalancedGraphs(N)
 	
 	return mats
 	
+end
+
+# ╔═╡ 81d4676c-4862-4f12-8970-2e5458369fa8
+let
+	println("Quick check to see if mats are loaded properly")
+	println("\nIt may also be the case that the mats are not in the same order if you used python to make the `.txt` files!")
+	
+	N = 5
+	mats_local = non_iso_g_notebook(N)
+	mats_from_file = _loadUniqueSignedMats(N)
+	
+	mats_local == mats_from_file || error("mats are not loaded properly!")
 end
 
 # ╔═╡ c18ff502-fb05-4dd0-96c8-a55ed612df58
@@ -766,10 +849,10 @@ end
 let
 	println("Cell used to collect data for the Ising model")
 	
-	N = 6
+	N = 4
 	mats = _loadUniqueSignedMats(N)
 	no_mats = length(mats)
-	β = .25
+	β = .11
 	T = 1/β
 
 	res = zeros(2, no_mats)
@@ -2847,7 +2930,7 @@ uuid = "8e850ede-7688-5339-a07c-302acd2aaf8d"
 version = "1.59.0+0"
 
 [[deps.oneTBB_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl"]
+deps = ["Artifacts", "JLLWrappers", "LazyArtifacts", "Libdl"]
 git-tree-sha1 = "d5a767a3bb77135a99e433afe0eb14cd7f6914c3"
 uuid = "1317d2d5-d96f-522e-a858-c73665f53c3e"
 version = "2022.0.0+0"
@@ -2877,6 +2960,7 @@ version = "1.8.1+0"
 """
 
 # ╔═╡ Cell order:
+# ╟─6ce8aac4-ed92-4435-9848-fd87d5889423
 # ╟─22fbfce4-66fa-11f0-37b5-5d0d71b6667a
 # ╟─07362646-c8c4-4e43-a074-0afcf6c112e9
 # ╟─4ee33bf5-761a-4bf9-a53c-5762b9af7e9c
@@ -2920,12 +3004,14 @@ version = "1.8.1+0"
 # ╟─2c5f89f3-c877-4bdf-83b7-3da40798020f
 # ╟─c974cb11-9d49-4141-86a4-67e73bdbad73
 # ╟─4ea8c007-377b-4593-9872-96637a11c9bf
+# ╟─1eea135d-4a69-44fb-8a2f-5a21ace0f10f
+# ╟─6e902feb-87c0-4b39-b5e2-65310adc6447
 # ╟─91e9884c-28f1-45f3-ad7c-a3be21a59ae6
 # ╟─a8e516c9-72ed-4509-be5a-a4ebafff5c7a
 # ╟─9624cb31-2d9c-442d-ad4d-0fb447e73586
-# ╟─dc08a397-5d98-4c54-a78a-0fd5a9501ff4
-# ╟─81d4676c-4862-4f12-8970-2e5458369fa8
+# ╠═dc08a397-5d98-4c54-a78a-0fd5a9501ff4
 # ╟─2e9a9240-84ef-45da-9805-ad7f5122a123
+# ╟─81d4676c-4862-4f12-8970-2e5458369fa8
 # ╟─c18ff502-fb05-4dd0-96c8-a55ed612df58
 # ╟─48af4a65-c085-48b2-a108-58744c214b8b
 # ╟─a09d6c3e-d695-405c-a537-a62313d52ab0

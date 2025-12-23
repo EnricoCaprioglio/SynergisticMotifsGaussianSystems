@@ -11,7 +11,7 @@ The main thing you have to do is to load some data for the non-isomporhic graphs
 
 If you want to just have a quick look and run some simulations without loading the graphs dataset, each notebook has a cell containing some non-isomorphic graphs. For graphs of size N > 5 you will need to download the dataset.
 
-All the figures use data that can be generated in just a few seconds or worst a few minutes (except the SL simulation for N=6). To reproduce exactly what is shown in the paper, use the same seeds to generate the random numbers used here (these should always be sepcified otherwise reach out).
+All the figures use data that can be generated in just a few seconds or worst a few minutes (except the SL simulation for N=6). To reproduce exactly what is shown in the paper, use the same seeds to generate the random numbers used here (these should always be specified otherwise, please, reach out).
 
 ---
 
