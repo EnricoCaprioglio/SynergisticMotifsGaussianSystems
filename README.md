@@ -2,7 +2,7 @@
 The repository accompanies the paper: "Synergistic Motif in Gaussian Systems".
 It includes all the notebooks used to collect data and plot the figures in the paper and in the supplementary material.
 
-The [Pluto notebooks](https://plutojl.org/) can be opened on any web browser and ran using binder.
+The [Pluto notebooks](https://plutojl.org/) can be opened on any web browser and ran using binder. Simply download the (Julia) `html` files.
 
 # Overview
 
