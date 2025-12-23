@@ -1098,55 +1098,6 @@ let
 	
 end
 
-# ╔═╡ 05a89f24-064b-48e9-8d4a-50dcba320cab
-# let
-# 	# here we combine data per canonical network, across all tasks, and study the correlation
-
-# 	N = 229
-	
-# 	labels, coords_xyz, colors, canon_labels, canon_colors = _load_Power229_atlas_canon_net()
-
-# 	desired_tasks = ["rest", "inhib", "initi", "0back", "1back", "2back", "shift"]
-	
-# 	corr_res = zeros(length(canon_labels))
-
-# 	for (i, label) in enumerate(canon_labels)
-
-# 		U_collect = []
-# 		Ω_collect = []
-		
-# 		for (j, task) in enumerate(desired_tasks)
-
-# 			obj_task = load_object("/Users/ec627/Documents/Data/fMRI_data_powers_cognitive_tasks/U_vs_O_Powers229/$(task).jld2")
-		
-# 			U_store_canon_net_task=obj_task.U_store_canon_net
-# 			Ω_store_canon_net_task=obj_task.Ω_store_canon_net
-			
-# 			push!(U_collect, U_store_canon_net_task[label])
-# 			push!(Ω_collect, Ω_store_canon_net_task[label])
-			
-# 		end
-
-# 		U_collect = vcat(U_collect...)
-# 		Ω_collect = vcat(Ω_collect...)
-	
-# 		# @show label
-# 		# display(CorrelationTest(U_collect, Ω_collect))
-# 		res_test = CorrelationTest(U_collect, Ω_collect)
-# 		r_res_test = res_test.r
-
-# 		corr_res[i] = r_res_test
-		
-# 	end
-
-# 	fig=Figure()
-# 	ax=Axis(fig[1,1])
-# 	ax.xticks = (1:length(canon_labels), canon_labels)
-# 	mk.scatter!(ax, 1:length(canon_labels), corr_res)
-# 	mk.ylims!(ax, -1, 0)
-# 	fig
-# end
-
 # ╔═╡ 38ee1446-3b92-4f07-9b87-98d34ec12636
 let
 	#######################
@@ -1239,122 +1190,6 @@ let
 	
 	fig
 end
-
-# ╔═╡ 83b4346a-b929-43a9-a130-8d05c413dd1e
-# let
-# 	# Dots represent group-level medians of energy changes, with different networks indicated by colors
-	
-# 	# so (I think) we need to compute the energy changes at the group level, and then take the median of these changes.
-
-# 	# we do this first with U, to check we get the same plot, and then try with Ω₃
-	
-# 	labels, coords_xyz, colors, canon_labels, canon_colors = _load_Power229_atlas_canon_net()
-
-# 	# first, we load the results are rest:
-# 	obj_rest = load_object("/Users/ec627/Documents/Data/fMRI_data_powers_cognitive_tasks/U_vs_O_Powers229/rest.jld2") # _cuberoot_true
-# 	U_store_canon_net_rest=obj_rest.U_store_canon_net
-# 	Ω_store_canon_net_rest=obj_rest.Ω_store_canon_net
-
-# 	# second, we compute the changes for each individual, across tasks and canonical networks
-	
-# 	desired_tasks = ["0back", "1back", "2back", "inhib", "initi", "shift"]
-
-# 	res_U = zeros(length(canon_labels), length(desired_tasks))
-# 	res_Ω = zeros(length(canon_labels), length(desired_tasks))
-	
-# 	for (j, task) in enumerate(desired_tasks)
-		
-# 		obj_task = load_object("/Users/ec627/Documents/Data/fMRI_data_powers_cognitive_tasks/U_vs_O_Powers229/$(task).jld2") # _cuberoot_true
-		
-# 		U_store_canon_net_task=obj_task.U_store_canon_net
-# 		Ω_store_canon_net_task=obj_task.Ω_store_canon_net
-		
-# 		for (i, label) in enumerate(canon_labels)
-
-# 			# using median of the changes
-# 			median_change_U = median(
-# 				zscore(U_store_canon_net_task[label]) .- zscore(U_store_canon_net_rest[label])
-# 			)
-# 			median_change_Ω = median(
-# 				zscore(Ω_store_canon_net_task[label]) .- zscore(Ω_store_canon_net_rest[label])
-# 			)
-
-# 			# using changes of the medians
-# 			# median_change_U = median(zscore(U_store_canon_net_task[label])) - median(zscore(U_store_canon_net_rest[label]))
-			
-# 			# median_change_Ω = median(zscore(Ω_store_canon_net_task[label])) - median(zscore(Ω_store_canon_net_rest[label]))
-
-# 			res_U[i,j] = median_change_U
-# 			res_Ω[i,j] = median_change_Ω
-			
-# 		end
-# 	end
-
-# 	fig = Figure(size=(650,500))
-# 	ax = Axis(fig[1,1])
-# 	for (i, label) in enumerate(canon_labels)
-# 		mk.scatterlines!(
-# 			ax,
-# 			collect(1:length(desired_tasks)),
-# 			res_U[i, :],
-# 			label=label,
-# 			markersize=15,
-# 			linewidth=5,
-# 			color=canon_colors[label]
-# 		)
-# 	end
-	
-# 	# ax2 = Axis(fig[2,1])
-# 	# for (i, label) in enumerate(canon_labels)
-# 	# 	mk.scatterlines!(
-# 	# 		ax2,
-# 	# 		collect(1:length(desired_tasks)),
-# 	# 		res_Ω[i, :],
-# 	# 		label=label,
-# 	# 		markersize=15,
-# 	# 		linewidth=5,
-# 	# 		color=canon_colors[label],
-			
-# 	# 	)
-# 	# end
-# 	# ax2.yreversed = true
-
-# 	# ax2 = Axis(fig[2,1])
-# 	# for (i, label) in enumerate(canon_labels)
-# 	# 	mk.scatterlines!(
-# 	# 		ax2,
-# 	# 		collect(1:length(desired_tasks)),
-# 	# 		res_Ω[i, :],
-# 	# 		label=label,
-# 	# 		markersize=15,
-# 	# 		linewidth=5,
-# 	# 		color=canon_colors[label],
-			
-# 	# 	)
-# 	# end
-# 	# ax2.yreversed = true
-# 	# Legend(fig[1:2,2], ax)
-
-# 	twin_ax = Axis(
-# 		fig[1, 1], yticklabelcolor = :red, yaxisposition = :right, ylabel = L"\Omega_3"
-# 	)
-# 	for (i, label) in enumerate(canon_labels)
-# 		mk.scatterlines!(
-# 			twin_ax,
-# 			collect(1:length(desired_tasks)),
-# 			res_Ω[i, :],
-# 			label=label,
-# 			markersize=5,
-# 			linewidth=1,
-# 			color=canon_colors[label],
-			
-# 		)
-# 	end
-# 	twin_ax.yreversed = true
-# 	Legend(fig[1,2], ax)
-	
-# 	fig
-# end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -3745,8 +3580,6 @@ version = "1.13.0+0"
 # ╠═705e8cc8-52e4-48b1-9633-97a37cd84b2a
 # ╟─5d9ee330-803c-4f62-af4e-92a9d166faa1
 # ╟─783f7ccb-e72d-4ac9-82d9-44ce99d4645e
-# ╟─05a89f24-064b-48e9-8d4a-50dcba320cab
 # ╟─38ee1446-3b92-4f07-9b87-98d34ec12636
-# ╟─83b4346a-b929-43a9-a130-8d05c413dd1e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
